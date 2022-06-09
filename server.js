@@ -16,10 +16,10 @@ let db = new sqlite3.Database("tickets.db");
 
 function createTable() {
     db.run(
-      "CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT, event_name TEXT NOT NULL, event_description TEXT NOT NULL, ticket_price INT NOT NULL,orange_account INT UNIQUE,lonestar_account INT UNIQUE, location TEXT NOT NULL, event_date date, num_participants INT NOT NULL, img url)"
+      "CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT, event_name TEXT NOT NULL, event_description TEXT NOT NULL, ticket_price INT NOT NULL,currency TEXT, orange_account INT,lonestar_account INT, location TEXT NOT NULL, event_date date, num_participants INT NOT NULL, img url)"
     );
     db.run(
-      "CREATE TABLE IF NOT EXISTS participants(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, address TEXT NOT NULL,phone_number INT NOT NULL, amount INT NOT NULL, img url)"
+      "CREATE TABLE IF NOT EXISTS participants(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, address TEXT NOT NULL,phone_number INT NOT NULL, price INT NOT NULL, img url)"
     );
     db.run(
       "CREATE TABLE IF NOT EXISTS admin(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, nickname TEXT,img url UNIQUE)"
@@ -32,13 +32,14 @@ app.post("/events", function (req, res) {
   let bodydata = req.body;
   console.log(bodydata);
 
-  let query = `INSERT INTO events(event_name, event_description, ticket_price, orange_account, lonestar_account,location, event_date, num_participants, img) VALUES(?,?,?,?,?,?,?,?,?)`;
+  let query = `INSERT INTO events(event_name, event_description, ticket_price, currency, orange_account, lonestar_account,location, event_date, num_participants, img) VALUES(?,?,?,?,?,?,?,?,?,?)`;
   db.run(
     query,
     [
       bodydata["event_name"],
       bodydata["event_description"],
       bodydata["ticket_price"],
+      bodydata["currency"],
       bodydata["orange_account"],
       bodydata["lonestar_account"],
       bodydata["location"],
@@ -62,14 +63,14 @@ app.post("/participants", function (req, res) {
     let bodydata = req.body;
     console.log(bodydata);
   
-    let query = `INSERT INTO events(name, address, phone_number, amount, img) VALUES(?,?,?,?,?)`;
+    let query = `INSERT INTO participants(name, address, phone_number, price, img) VALUES(?,?,?,?,?)`;
     db.run(
       query,
       [
         bodydata["name"],
         bodydata["address"],
         bodydata["phone_number"],
-        bodydata["account"],
+        bodydata["price"],
         bodydata["img"],
       ],
       (err) => {
@@ -150,7 +151,7 @@ app.post("/participants", function (req, res) {
     console.log(req.params);
 
     let query_data = `SELECT * FROM admin WHERE email='${user_email}'`;
-    db.get(query_data, [], (err, rows) => {
+    db.get(query_data, (err, rows) => {
       if (err) {
         throw err;
       }
@@ -172,6 +173,20 @@ app.post("/participants", function (req, res) {
         res.send({ single_event: row });
       });
     });
- 
+    app.get("/ticket/:id", function (req, res) {
+      let ticket_id = req.params.id;
+      console.log("ticket_id", ticket_id);
+      let query = `SELECT * FROM participants WHERE id=${ticket_id}`;
+      console.log({ query })
+      db.get(query, (err, row) => {
+        if (err) {
+          console.log(err);
+          // throw err;
+        }
+        console.log({ row });
+        
+        res.send({ single_ticket: row });
+      });
+    });
   server.listen(port);
   console.log("Server is listening at port: ", port);
