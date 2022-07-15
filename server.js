@@ -19,7 +19,7 @@ function createTable() {
       "CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT, event_name TEXT NOT NULL, event_description TEXT NOT NULL, ticket_price INT NOT NULL, currency INT NOT NULL, orange_account INT,lonestar_account INT, location TEXT NOT NULL, event_date date, num_participants INT NOT NULL, status TEXT, host_id INT, img url, FOREIGN KEY(host_id) REFERENCES admin(id))"
     );
     db.run(
-      "CREATE TABLE IF NOT EXISTS tickets(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, address TEXT NOT NULL,phone_number INT NOT NULL, amount INT, quantity INT, img url)"
+      "CREATE TABLE IF NOT EXISTS tickets(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, address TEXT NOT NULL,phone_number INT NOT NULL, amount INT, quantity INT, status TEXT, img url)"
     );
     db.run(
       "CREATE TABLE IF NOT EXISTS admin(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, nickname TEXT,img url UNIQUE)"
@@ -71,7 +71,7 @@ app.post("/tickets", function (req, res) {
     let bodydata = req.body;
     console.log(bodydata);
   
-    let query = `INSERT INTO tickets(name, address, phone_number, amount, quantity, img) VALUES(?,?,?,?,?,?)`;
+    let query = `INSERT INTO tickets(name, address, phone_number, amount, quantity, status, img) VALUES(?,?,?,?,?,?,?)`;
     db.run(
       query,
       [
@@ -80,6 +80,7 @@ app.post("/tickets", function (req, res) {
         bodydata["phone_number"],
         bodydata["amount"],
         bodydata["quantity"],
+        bodydata["status"],
         bodydata["img"]
       ],
       (err) => {
@@ -261,11 +262,26 @@ console.log({rows})
 res.send({next_page: rows})
   });
 });
+// LATEST EVENTS 
+app.get("/latest_events", function(req, res){
+  let query = `SELECT event_name, num_participants, status, event_date, nickname from events, admin WHERE events.id=admin.id`;
+  db.all(query, (err, row)=>{
+if(err){
+  throw err;
+}
+console.log({row});
+res.send({row: row})
+  })
 
+})
+// LATEST TICKETS 
+app.get("/latest_tickets", function (req, res){
+let query = `SELECT event_name, amount, currency, quantity, s`
+})
 // exeample 
 app.get("/try", function(req, res){
   let query = `SELECT * from events, tickets WHERE events.id=tickets.id`;
-  db.get(query, (err, row)=>{
+  db.all(query, (err, row)=>{
 if(err){
   throw err;
 }
