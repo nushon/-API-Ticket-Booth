@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "dotenv": "^16.0.1",
     "express": "^4.17.3",
     "node": "^17.7.2",
+    "node-fetch": "^3.2.9",
     "sqlite3": "^5.0.4"
   },
   "devDependencies": {
