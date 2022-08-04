@@ -98,7 +98,7 @@ app.post("/tickets", function (req, res) {
       bodydata["quantity"],
       bodydata["status"],
       bodydata["event_name"],
-      datetime(now),
+      bodydata["transaction_date"],
       bodydata["img"]
     ],
   );
