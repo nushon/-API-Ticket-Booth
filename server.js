@@ -9,6 +9,7 @@ let app = express();
 let server = http.createServer(app);
 require('dotenv').config()
 const axios = require('axios').default;
+const { makePayment } = require('./helpers/utils');
 // const fetch = require("node-fetch");
 // const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
@@ -84,7 +85,7 @@ app.post("/events", function (req, res) {
 //     // let amount = bodydata.amount;
 //     // let currency = bodydata.currency;
 //     // let quantity = bodydata.quantity;
-    
+
 //   console.log(bodydata);
 //   let query = `INSERT INTO tickets(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img) VALUES(?,?,?,?,?,?,?,?,?,?)`;
 //   db.run(
@@ -189,96 +190,68 @@ app.post("/tickets", async function (req, res) {
   let info_data;
   let transaction_id;
   info_data = req.body;
-    console.log("This is it: ", info_data);
-    let name = info_data.name;
-    let address = info_data.address;
-    let amount = info_data.amount;
-    let msisdn = info_data.msisdn;
-    let currency = info_data.currency.toLowerCase();
-    let external_id = info_data.external_id;
-    let event_name = info_data.event_name;
-    let transaction_date;
-    let status;
-    console.log(name, address, amount, event_name);
-    console.log({currency, amount, msisdn, external_id});
+  console.log("This is it: ", info_data);
+  let name = info_data.name;
+  let address = info_data.address;
+  let amount = info_data.amount;
+  let msisdn = info_data.msisdn;
+  let currency = info_data.currency.toLowerCase();
+  let external_id = info_data.external_id;
+  let event_name = info_data.event_name;
+  let transaction_date;
+  let status;
+  let img;
+  let quantity;
+  console.log(name, address, amount, event_name);
+  console.log({ currency, amount, msisdn, external_id });
 
-  
-  try {
-      // 1. post data to the tickets table 
-      
-    // 1. get the uuid, amount, msisdn, currency from the response 
-         // 2. make axios request to get token
-    const token_reponse = await axios({
-     
-      method: 'post',
-      url: process.env.PONITOR_TOKEN_URL,
-      data: {
-        "app_id": process.env.APP_ID,
-        "app_secret": process.env.APP_SECRET
+  const payments_response = await makePayment({
+    amount,
+    msisdn,
+    external_id,
+    currency
+  });
+
+  if (payments_response) {
+    transaction_date = payments_response.created_at;
+    transaction_id = payments_response.id;
+    status = payments_response.status;
+  }
+
+  console.log({ payments_response, transaction_date, transaction_id, status })
+
+
+
+  // POST TO THE TICKETS TABLE 
+
+  let query = `INSERT INTO tickets(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img) VALUES(?,?,?,?,?,?,?,?,?,?)`;
+  db.run(
+    query,
+    [
+      name,
+      address,
+      msisdn,
+      amount,
+      currency,
+      quantity,
+      status,
+      event_name,
+      transaction_date,
+      img,
+    ],
+
+    (err) => {
+      if (err) {
+        console.log(err);
+        res.send("Unsuccessful");
+      } else {
+        // res.status(200);
+        res.send("Your Host table was inserted successfully");
+
       }
-      
-    });
-    console.log("The token: ", token_reponse);
-    let token = token_reponse.data.data.token;
-    // console.log("Ponitor's API token: ", token);
-          
-      // 3. use token to request payment
-    if (token) {
-      const payment_reponse = await axios({
-        method: 'post',
-        url: process.env.PONITOR_PAYMENT,
-        headers: { 'Authorization': 'Bearer ' + token },
-        data: {
-          "amount": amount,
-          "msisdn": msisdn,
-          "currency": currency,
-          "external_id": external_id,
-          "message": "Payment made to buy ticket Ticket Booth" 
-        }
-
-      });
-      transaction_date = payment_reponse.data.data.transaction.created_at;
-      transaction_id = payment_reponse.data.data.transaction.id;
-      status = payment_reponse.data.data.transaction.status;
-      
-      // console.log("Date, Id, status", transaction_date, transaction_id, status);
-      console.log("The data", payment_reponse.data.data.transaction);
-      transaction = payment_reponse.data.data.transaction;
-      // console.log("The transaction: ", transaction);
-
-      
-
-      // const transaction_date = payment_reponse.data.data.transaction.created_at;
-      // const payment_status = payment_reponse.data.data.transaction.status;
-      // console.log(transaction_date, payment_status);
-     
     }
-   
-    
-  }
-  
-  catch (error) {
-    console.log(error.message);
-  }
-
- // POST TO THE TICKETS TABLE 
-
- let query = `INSERT INTO tickets(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img) VALUES(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img)`;
- db.run(
-   query,
-  
-   (err) => {
-     if (err) {
-       console.log(err);
-       res.send("Unsuccessful");
-     } else {
-       // console.log("Your Host table was inserted successfully");
-       res.send("Your Ticket's table was inserted successfully");
-       
-     }
-   }
- );
- res.json(query);
+  );
+  // res.json(query);
   // console.log("The response: ", info_data);
   // res.send(info_data);
 });
@@ -286,7 +259,7 @@ app.post("/tickets", async function (req, res) {
 //   try {
 //     let bodydata = req.body;
 //     console.log(bodydata);
-  
+
 //     let query = `INSERT INTO tickets(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img) VALUES(?,?,?,?,?,?,?,?,?,?)`;
 //     db.run(
 //       query,
@@ -313,7 +286,7 @@ app.post("/tickets", async function (req, res) {
 //       }
 //     );
 //   } catch (error) {
-    
+
 //   }
 // })
 // ______________________________________ GET ROUTE _______________________________________________
@@ -433,25 +406,25 @@ app.get("/latest_events", function (req, res) {
 
 })
 // ADMIN DATA 
-app.get("/ticket_info/:event_name", function (req, res){
-  
+app.get("/ticket_info/:event_name", function (req, res) {
+
   try {
     let event_name = req.params.event_name;
     let query = `SELECT * FROM tickets WHERE event_name=${event_name}`;
-    db.all(query, (err, row) =>{
-    if (err){
-      throw err;
-    }
-    console.log({row});
-    res.send({Event_tickets: row});
+    db.all(query, (err, row) => {
+      if (err) {
+        throw err;
+      }
+      console.log({ row });
+      res.send({ Event_tickets: row });
     })
   } catch (error) {
     console.log(error);
   }
 })
 // GET COLLECTION 
-app.get("/get_collection", async function (req, res){
-  try{
+app.get("/get_collection", async function (req, res) {
+  try {
     if (transaction) {
       console.log("We have it here.");
       const collection_token = await axios({
@@ -461,21 +434,21 @@ app.get("/get_collection", async function (req, res){
           "app_id": process.env.APP_ID,
           "app_secret": process.env.APP_SECRET
         }
-        
+
       });
       console.log("The Collection token: ", collection_token);
       let token_result = collection_token.data.data.token;
 
       if (token_result) {
         const get_collection = await axios({
-          
+
           url: `https://api.ponitor.com/v1/momo/collect?id=${transaction_id}`,
           headers: { 'Authorization': 'Bearer ' + token_result }
         })
         console.log("Transaction id: ", transaction_id);
         console.log("We see: ", get_collection.data.data.transactions);
       }
-      
+
     }
   } catch (error) {
     console.log(error);
