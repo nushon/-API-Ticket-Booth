@@ -75,39 +75,39 @@ app.post("/events", function (req, res) {
 });
 
 // POST TO THE TICKETS TABLE
-app.post("/tickets", function (req, res) {
-  try {
-    let bodydata = req.body;
-    // let name = bodydata.name;
-    // let address = bodydata.address;
-    // let msisdn = bodydata.msisdn;
-    // let amount = bodydata.amount;
-    // let currency = bodydata.currency;
-    // let quantity = bodydata.quantity;
+// app.post("/tickets", function (req, res) {
+//   try {
+//     let bodydata = req.body;
+//     // let name = bodydata.name;
+//     // let address = bodydata.address;
+//     // let msisdn = bodydata.msisdn;
+//     // let amount = bodydata.amount;
+//     // let currency = bodydata.currency;
+//     // let quantity = bodydata.quantity;
     
-  console.log(bodydata);
-  let query = `INSERT INTO tickets(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img) VALUES(?,?,?,?,?,?,?,?,?,?)`;
-  db.run(
-    query,
-    [
-      bodydata["name"],
-      bodydata["address"],
-      bodydata["msisdn"],
-      bodydata["amount"],
-      bodydata["currency"],
-      bodydata["quantity"],
-      bodydata["status"],
-      bodydata["event_name"],
-      bodydata["transaction_date"],
-      bodydata["img"]
-    ],
-  );
-  } catch (error) { 
-    res.send({Error: error})
-  }
-  res.send("Your Tickets table was inserted successfully");
-  res.send(data);
-});
+//   console.log(bodydata);
+//   let query = `INSERT INTO tickets(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img) VALUES(?,?,?,?,?,?,?,?,?,?)`;
+//   db.run(
+//     query,
+//     [
+//       bodydata["name"],
+//       bodydata["address"],
+//       bodydata["msisdn"],
+//       bodydata["amount"],
+//       bodydata["currency"],
+//       bodydata["quantity"],
+//       bodydata["status"],
+//       bodydata["event_name"],
+//       bodydata["transaction_date"],
+//       bodydata["img"]
+//     ],
+//   );
+//   } catch (error) { 
+//     res.send({Error: error})
+//   }
+//   res.send("Your Tickets table was inserted successfully");
+//   res.send(data);
+// });
 // POST TO THE ADMIN TABLE
 app.post("/admin", function (req, res) {
   let bodydata = req.body;
@@ -185,38 +185,45 @@ app.post("/tokens", function (req, res) {
   );
 });
 
-app.post("/ponitor_api", async function (req, res) {
+app.post("/tickets", async function (req, res) {
+  let info_data;
+  let transaction_id;
+  info_data = req.body;
+    console.log("This is it: ", info_data);
+    let name = info_data.name;
+    let address = info_data.address;
+    let amount = info_data.amount;
+    let msisdn = info_data.msisdn;
+    let currency = info_data.currency.toLowerCase();
+    let external_id = info_data.external_id;
+    let event_name = info_data.event_name;
+    let transaction_date;
+    let status;
+    console.log(name, address, amount, event_name);
+    console.log({currency, amount, msisdn, external_id});
 
+  
   try {
       // 1. post data to the tickets table 
-   
+      
     // 1. get the uuid, amount, msisdn, currency from the response 
-    let data = req.body;
-    let name = data.name;
-    let address = data.address;
-    let amount = data.amount;
-    let msisdn = data.msisdn;
-    let currency = data.currency.toLowerCase();
-    let external_id = data.external_id;
-    let event_name = data.event_name;
-    // console.log(name, address, amount);
-    console.log({currency, amount, msisdn, external_id});
-    //      // 2. make axios request to get token
+         // 2. make axios request to get token
     const token_reponse = await axios({
+     
       method: 'post',
       url: process.env.PONITOR_TOKEN_URL,
       data: {
         "app_id": process.env.APP_ID,
         "app_secret": process.env.APP_SECRET
       }
+      
     });
-
-    const token = token_reponse.data.data.token;
+    console.log("The token: ", token_reponse);
+    let token = token_reponse.data.data.token;
     // console.log("Ponitor's API token: ", token);
-          // "message": "A gift from Kwagei"
-
-    if (token) {
+          
       // 3. use token to request payment
+    if (token) {
       const payment_reponse = await axios({
         method: 'post',
         url: process.env.PONITOR_PAYMENT,
@@ -225,62 +232,90 @@ app.post("/ponitor_api", async function (req, res) {
           "amount": amount,
           "msisdn": msisdn,
           "currency": currency,
-          "external_id": external_id
-          // "message": `Payment made to buy ticket for ${event_name} event. "Ticket Booth" `
+          "external_id": external_id,
+          "message": "Payment made to buy ticket Ticket Booth" 
         }
 
       });
+      transaction_date = payment_reponse.data.data.transaction.created_at;
+      transaction_id = payment_reponse.data.data.transaction.id;
+      status = payment_reponse.data.data.transaction.status;
+      
+      // console.log("Date, Id, status", transaction_date, transaction_id, status);
+      console.log("The data", payment_reponse.data.data.transaction);
+      transaction = payment_reponse.data.data.transaction;
+      // console.log("The transaction: ", transaction);
 
-      console.log(payment_reponse.data.data)
-      const transaction_date = payment_reponse.data.data.transaction.created_at;
-      const payment_status = payment_reponse.data.data.transaction.status;
-      console.log(transaction_date, payment_status);
+      
+
+      // const transaction_date = payment_reponse.data.data.transaction.created_at;
+      // const payment_status = payment_reponse.data.data.transaction.status;
+      // console.log(transaction_date, payment_status);
      
     }
-  
-    //     let bodydata = req.body;
-    //     console.log(bodydata);
-
+   
+    
   }
   
   catch (error) {
-    // console.log(error.message);
+    console.log(error.message);
   }
-});
-app.post("/tickets", async function(req, res){
-  try {
-    let bodydata = req.body;
-    console.log(bodydata);
+
+ // POST TO THE TICKETS TABLE 
+
+ let query = `INSERT INTO tickets(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img) VALUES(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img)`;
+ db.run(
+   query,
   
-    let query = `INSERT INTO tickets(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img) VALUES(?,?,?,?,?,?,?,?,?,?)`;
-    db.run(
-      query,
-      [
-        bodydata["name"],
-        bodydata["address"],
-        bodydata["msisdn"],
-        bodydata["amount"],
-        bodydata["currency"],
-        bodydata["quantity"],
-        bodydata["status"],
-        bodydata["event_name"],
-        bodydata["transaction_date"],
-        bodydata["img"]
-      ],
-      (err) => {
-        if (err) {
-          console.log(err);
-          res.send("Unsuccessful");
-        } else {
-          // console.log("Your Host table was inserted successfully");
-          res.send("Your Tickets table was inserted successfully");
-        }
-      }
-    );
-  } catch (error) {
+   (err) => {
+     if (err) {
+       console.log(err);
+       res.send("Unsuccessful");
+     } else {
+       // console.log("Your Host table was inserted successfully");
+       res.send("Your Ticket's table was inserted successfully");
+       
+     }
+   }
+ );
+ res.json(query);
+  // console.log("The response: ", info_data);
+  // res.send(info_data);
+});
+// app.post("/tickets", async function(req, res){
+//   try {
+//     let bodydata = req.body;
+//     console.log(bodydata);
+  
+//     let query = `INSERT INTO tickets(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img) VALUES(?,?,?,?,?,?,?,?,?,?)`;
+//     db.run(
+//       query,
+//       [
+//         bodydata["name"],
+//         bodydata["address"],
+//         bodydata["msisdn"],
+//         bodydata["amount"],
+//         bodydata["currency"],
+//         bodydata["quantity"],
+//         bodydata["status"],
+//         bodydata["event_name"],
+//         bodydata["transaction_date"],
+//         bodydata["img"]
+//       ],
+//       (err) => {
+//         if (err) {
+//           console.log(err);
+//           res.send("Unsuccessful");
+//         } else {
+//           // console.log("Your Host table was inserted successfully");
+//           res.send("Your Tickets table was inserted successfully");
+//         }
+//       }
+//     );
+//   } catch (error) {
     
-  }
-})
+//   }
+// })
 // ______________________________________ GET ROUTE _______________________________________________
 app.get("/", function (req, res) {
   res.send(
@@ -414,6 +449,38 @@ app.get("/ticket_info/:event_name", function (req, res){
     console.log(error);
   }
 })
+// GET COLLECTION 
+app.get("/get_collection", async function (req, res){
+  try{
+    if (transaction) {
+      console.log("We have it here.");
+      const collection_token = await axios({
+        method: 'post',
+        url: process.env.PONITOR_TOKEN_URL,
+        data: {
+          "app_id": process.env.APP_ID,
+          "app_secret": process.env.APP_SECRET
+        }
+        
+      });
+      console.log("The Collection token: ", collection_token);
+      let token_result = collection_token.data.data.token;
+
+      if (token_result) {
+        const get_collection = await axios({
+          
+          url: `https://api.ponitor.com/v1/momo/collect?id=${transaction_id}`,
+          headers: { 'Authorization': 'Bearer ' + token_result }
+        })
+        console.log("Transaction id: ", transaction_id);
+        console.log("We see: ", get_collection.data.data.transactions);
+      }
+      
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
 // LATEST TICKETS 
 app.get("/latest_tickets", function (req, res) {
   let query = `SELECT event_name, amount, currency, quantity, s`
