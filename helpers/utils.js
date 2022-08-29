@@ -25,6 +25,7 @@ const makePayment = async (opts) => {
         "amount": opts.amount,
         "msisdn": opts.msisdn,
         "currency": opts.currency,
+        "ticket_number": opts.ticket_number,
         "external_id": opts.external_id,
         "message": "Payment made to buy ticket using Ticket Booth" 
       }

@@ -358,13 +358,10 @@ app.get("/ticket_info/:event_name", function (req, res) {
 // GET COLLECTION 
 app.get("/get_collection", async function (req, res) {
 
-  // const collectionResponse = await getCollection ({
-    
-  // });
-  // console.log(collectionResponse);
   try {
+    let collectionResult;
     if (payments_response) {
-      console.log("We have it here: ", payments_response);
+      // console.log("We have it here: ", payments_response);
       let transaction_id = payments_response.id;
       const collection_token = await axios({
         method: 'post',
@@ -375,7 +372,7 @@ app.get("/get_collection", async function (req, res) {
         }
 
       });
-      console.log("The Collection token: ", collection_token);
+      // console.log("The Collection token: ", collection_token);
       let token_result = collection_token.data.data.token;
 
       if (token_result) {
@@ -384,29 +381,32 @@ app.get("/get_collection", async function (req, res) {
           url: `https://api.ponitor.com/v1/momo/collect?id=${transaction_id}`,
           headers: { 'Authorization': 'Bearer ' + token_result }
         })
-        console.log("We see: ", get_collection.data.data.transactions);
+        collectionResult = get_collection.data.data.transactions;
+        console.log({collectionResult});
+        
       }
 
     }
+    res.send({collectionResult})
   } catch (error) {
     console.log(error);
   }
 });
 // LATEST TICKETS 
-app.get("/latest_tickets", function (req, res) {
-  let query = `SELECT event_name, amount, currency, quantity, s`
-})
+// app.get("/latest_tickets", function (req, res) {
+//   let query = `SELECT event_name, amount, currency, quantity, s`
+// })
 // exeample 
-app.get("/try", function (req, res) {
-  let query = `SELECT * from events, tickets WHERE events.id=tickets.id`;
-  db.all(query, (err, row) => {
-    if (err) {
-      throw err;
-    }
-    console.log({ row });
-    res.send({ row: row })
-  })
+// app.get("/try", function (req, res) {
+//   let query = `SELECT * from events, tickets WHERE events.id=tickets.id`;
+//   db.all(query, (err, row) => {
+//     if (err) {
+//       throw err;
+//     }
+//     console.log({ row });
+//     res.send({ row: row })
+//   })
 
-})
+// })
 server.listen(port);
 console.log("Server is listening at port: ", port);
