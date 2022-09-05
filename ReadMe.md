@@ -43,8 +43,7 @@ Format to use:
 } 
 ```
 
-- /admin ----- Create new event and store it in the events table in the Database.
-Intend to use KeyCloak for authentication.
+- /admin ----- Intend to use KeyCloak for authentication and store the register admin in the admin table.
 
 - /tickets ----- Make a call to the Ponitor's API to make the mobile money transaction to purchase a ticket and store the data in the tickets table in the Database.
 Format to use:
