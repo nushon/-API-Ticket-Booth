@@ -94,7 +94,7 @@ Format to use:
 }
 ```
 ## Project Installation and Configuration
-### Installation: We have a package.json file already. Run the following commands in your terminal
-- 
+### Installation: We have a package.json file already. Run the below command in your terminal
+- npm install
 ### Run program
 - npm start
