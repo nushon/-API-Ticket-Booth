@@ -4,8 +4,6 @@
 - SQLite3
 - Express
 - EJS
-- Axios
-- Dotenv
 - Node-fetch
 
 ## Big Picture
