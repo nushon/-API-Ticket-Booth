@@ -1,4 +1,5 @@
 ## Ticketbooth API
+***
 ## Tech Stack
 - NodeJs
 - SQLite3
@@ -8,7 +9,7 @@
 
 ## Big Picture
 **Ticket Booth API** is an API server that is a digital ticket store 
-
+***
 ## Summary of all the endpoints with examples
 **GET REQUEST**
 
@@ -48,7 +49,7 @@ GET "/ticket_info/:event_name"
 ```
 GET "/get_collection"
 ```
-
+***
 ## POST REQUEST
 ***Events Route -- Create new event and store it in the events table in the Database.***
 ```
@@ -93,6 +94,33 @@ Format to use:
     "transaction_date": "03/1/2022"
 }
 ```
+***
+## Database schema. Database Name: tickets.db
+***events table***
+```js
+ db.run(
+    "CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT, event_name TEXT NOT NULL, event_description TEXT NOT NULL, ticket_price INT NOT NULL, currency INT NOT NULL, orange_account INT,lonestar_account INT, location TEXT NOT NULL, event_date date, num_participants INT NOT NULL, status TEXT, host_id INT, img url, FOREIGN KEY(host_id) REFERENCES admin(id))"
+  );
+  ```
+  ***tickets table***
+  ```js
+  db.run(
+    "CREATE TABLE IF NOT EXISTS tickets(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, address TEXT NOT NULL, msisdn INT NOT NULL, amount INT NOT NULL, currency TEXT NOT NULL, quantity INT NOT NULL, status TEXT NOT NULL, event_name TEXT NOT NULL, transaction_date NOT NULL, img TEXT)"
+  );
+  ```
+  ***admin table***
+  ```js
+  db.run(
+    "CREATE TABLE IF NOT EXISTS admin(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, nickname TEXT,img TEXT UNIQUE)"
+  );
+  ```
+  ***participants***
+  ```js
+  db.run(
+    "CREATE TABLE IF NOT EXISTS participants(id INTEGER PRIMARY KEY AUTOINCREMENT, tickets_id INT, events_id INT, status TEXT, date DATE, FOREIGN KEY(tickets_id) REFERENCES tickets(id), FOREIGN KEY(events_id) REFERENCES events(id))"
+  );
+  ```
+  ***
 ## Project Installation and Configuration
 ### Installation: We have a package.json file already. Run the below command in your terminal
 - npm install
