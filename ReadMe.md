@@ -14,47 +14,47 @@
 ## Summary of all the endpoints with examples
 **GET REQUEST**
 
-***Home Route***
+***Home Route -- Display a Welcome page saying Welcome to Ticket-Booth API***
 ```
-"/" Display a Welcome page``` saying Welcome to Ticket-Booth API
+GET "/" 
 ```
-***All Events***
+***All Events -- Display all the events created from the events table in the Database***
 ```
-/all_events ----- Display all the events created from the events table in the Database
+GET "/all_events"
 ```
-***Participants Route***
+***Participants Route -- Display all the participants from the participants table in the Database***
 ```
-/participants ----- Display all the participants from the participants table in the Database
+GET "/participants" 
 ```
-***Tickets Route***
+***Tickets Route -- Display all tickets from the tickets table in the Database***
 ```
-/tickets ----- Display all tickets from the tickets table in the Database
+GET "/tickets"
 ```
-***Admin Route***
+***Admin Route -- Display all the admin from the admin table in the Database***
 ```
-/admin ----- Display all the admin from the admin table in the Database
+GET "/admin"
 ```
-***Event Route***
+***Event Route -- Display event base on the id passed from the events table in the Database***
 ```
-/event/:id ----- Display event base on the id passed from the events table in the Database
+GET "/event/:id"
 ```
-***Specific Ticket Route***
+***Specific Ticket Route -- Display ticket base on the id passed from the tickets table in the Database***
 ```
-/ticket/:id ----- Display ticket base on the id passed from the tickets table in the Database 
+GET "/ticket/:id"
 ```
-***Ticket info***
+***Ticket info -- Display ticket base on the id passed from the tickets table in the Database***
 ```
-/ticket_info/:event_name ----- Display ticket base on the id passed from the tickets table in the Database
+GET "/ticket_info/:event_name"
 ```
-***Get Collection Route***
+***Get Collection Route -- Getting collection from the Ponitor's API; Getting information about the mobile money transaction.***
 ```
-- /get_collection ----- Getting collection from the Ponitor's API; Getting information about the mobile money transaction.
+GET "/get_collection"
 ```
 
 ## POST REQUEST
-***Events Route***
+***Events Route -- Create new event and store it in the events table in the Database.***
 ```
-/events ---- Create new event and store it in the events table in the Database.
+POST "/events"
 ```
 Format to use:
 ```js
@@ -72,13 +72,13 @@ Format to use:
 	"img": "odc.url"
 } 
 ```
-***Admin Route***
+***Admin Route -- Intend to use KeyCloak for authentication and store the register admin in the admin table.***
 ```
-/admin ----- Intend to use KeyCloak for authentication and store the register admin in the admin table.
+POST "/admin" 
 ```
-***Tickets Route***
+***Tickets Route -- Make a call to the Ponitor's API to make the mobile money transaction to purchase a ticket and store the data in the tickets table in the Database.***
 ```
-- /tickets ----- Make a call to the Ponitor's API to make the mobile money transaction to purchase a ticket and store the data in the tickets table in the Database.
+POST "/tickets"
 ```
 Format to use:
 ```js
