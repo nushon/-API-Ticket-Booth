@@ -33,9 +33,9 @@ function createTable() {
   db.run(
     "CREATE TABLE IF NOT EXISTS participants(id INTEGER PRIMARY KEY AUTOINCREMENT, tickets_id INT, events_id INT, status TEXT, date DATE, FOREIGN KEY(tickets_id) REFERENCES tickets(id), FOREIGN KEY(events_id) REFERENCES events(id))"
   );
-  db.run(
-    "CREATE TABLE IF NOT EXISTS tokens(id INTEGER PRIMARY KEY AUTOINCREMENT, tickets_id INT, participants_id INT, events_id INT, token_code INT, FOREIGN KEY (tickets_id) REFERENCES tickets(id), FOREIGN KEY (events_id) REFERENCES events(id), FOREIGN KEY (participants_id) REFERENCES participants(id))"
-  );
+  // db.run(
+  //   "CREATE TABLE IF NOT EXISTS tokens(id INTEGER PRIMARY KEY AUTOINCREMENT, tickets_id INT, participants_id INT, events_id INT, token_code INT, FOREIGN KEY (tickets_id) REFERENCES tickets(id), FOREIGN KEY (events_id) REFERENCES events(id), FOREIGN KEY (participants_id) REFERENCES participants(id))"
+  // );
   // db.run(
   //   "CREATE TABLE IF NOT EXISTS ponitor_tokens(id INTEGER PRIMARY KEY AUTOINCREMENT, app_id TEXT, app_secret TEXT)"
   // );
@@ -75,40 +75,6 @@ app.post("/events", function (req, res) {
   );
 });
 
-// POST TO THE TICKETS TABLE
-// app.post("/tickets", function (req, res) {
-//   try {
-//     let bodydata = req.body;
-//     // let name = bodydata.name;
-//     // let address = bodydata.address;
-//     // let msisdn = bodydata.msisdn;
-//     // let amount = bodydata.amount;
-//     // let currency = bodydata.currency;
-//     // let quantity = bodydata.quantity;
-
-//   console.log(bodydata);
-//   let query = `INSERT INTO tickets(name, address, msisdn, amount, currency, quantity, status, event_name, transaction_date, img) VALUES(?,?,?,?,?,?,?,?,?,?)`;
-//   db.run(
-//     query,
-//     [
-//       bodydata["name"],
-//       bodydata["address"],
-//       bodydata["msisdn"],
-//       bodydata["amount"],
-//       bodydata["currency"],
-//       bodydata["quantity"],
-//       bodydata["status"],
-//       bodydata["event_name"],
-//       bodydata["transaction_date"],
-//       bodydata["img"]
-//     ],
-//   );
-//   } catch (error) { 
-//     res.send({Error: error})
-//   }
-//   res.send("Your Tickets table was inserted successfully");
-//   res.send(data);
-// });
 // POST TO THE ADMIN TABLE
 app.post("/admin", function (req, res) {
   let bodydata = req.body;
@@ -249,7 +215,6 @@ app.post("/tickets", async function (req, res) {
     }
   );
 });
-// console.log("Trans: ", payments_response());
 // ______________________________________ GET ROUTE _______________________________________________
 app.get("/", function (req, res) {
   res.send(
@@ -297,24 +262,10 @@ app.get("/admin", function (req, res) {
   });
 });
 
-// app.get("/admin/:id", (req, res) => {
-//   const admin_id = req.params.id;
-//   console.log(admin_id);
-//   let query_data = `SELECT * FROM admin WHERE id=${admin_id}`;
-//   // console.log(query_data);
-//   db.get(query_data, (err, row) => {
-//     if (err) {
-//       throw err;
-//     }
-//     console.log({ row })
-//     res.send({ single_admin: row });
-//   });
-// })
 app.get("/event/:id", function (req, res) {
   let eventId = req.params.id;
   console.log("eventId", eventId);
   let query = `SELECT * FROM events WHERE id=${eventId}`;
-  // console.log({ query })
   db.get(query, (err, row) => {
     if (err) {
       console.log(err);
@@ -372,7 +323,6 @@ app.get("/get_collection", async function (req, res) {
         }
 
       });
-      // console.log("The Collection token: ", collection_token);
       let token_result = collection_token.data.data.token;
 
       if (token_result) {
@@ -383,30 +333,12 @@ app.get("/get_collection", async function (req, res) {
         })
         collectionResult = get_collection.data.data.transactions;
         console.log({collectionResult});
-        
+        res.send({collectionResult});
       }
-
     }
-    res.send({collectionResult})
   } catch (error) {
     console.log(error);
   }
 });
-// LATEST TICKETS 
-// app.get("/latest_tickets", function (req, res) {
-//   let query = `SELECT event_name, amount, currency, quantity, s`
-// })
-// exeample 
-// app.get("/try", function (req, res) {
-//   let query = `SELECT * from events, tickets WHERE events.id=tickets.id`;
-//   db.all(query, (err, row) => {
-//     if (err) {
-//       throw err;
-//     }
-//     console.log({ row });
-//     res.send({ row: row })
-//   })
-
-// })
 server.listen(port);
 console.log("Server is listening at port: ", port);
