@@ -27,7 +27,7 @@ const makePayment = async (opts) => {
         "currency": opts.currency,
         "ticket_number": opts.ticket_number,
         "external_id": opts.external_id,
-        "message": "Payment made to buy ticket using Ticket Booth" 
+        "message": "Payment made to buy ticket for using Ticket Booth" 
       }
     });
     console.log("The data", payments_response.data.data);

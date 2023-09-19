@@ -13,7 +13,7 @@ const { makePayment, getCollection } = require('./helpers/utils');
 // const fetch = require("node-fetch");
 // const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 let payments_response;
-let port = process.env.PORT || 3200;
+let port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
